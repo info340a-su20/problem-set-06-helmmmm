@@ -66,9 +66,6 @@ function renderSearchResults(object) {
   }
 }
 
-renderSearchResults(EXAMPLE_SEARCH_RESULTS);
-console.log(recordsDiv);
-
 //Now it's the time to practice using `fetch()`! First, modify the `index.html`
 //file to load the polyfills for _BOTH_ the fetch() function and Promises, so
 //that your example will work on Internet Explorer.
@@ -92,22 +89,21 @@ console.log(recordsDiv);
 const URL_TEMPLATE = "https://itunes.apple.com/search?entity=song&limit=25&term={searchTerm}";
 
 function fetchTrackList(keyword) {
-  // toggleSpinner();
-  fetch(URL_TEMPLATE.replace('{searchTerm}', keyword))
+  toggleSpinner();
+  let promise = fetch(URL_TEMPLATE.replace('{searchTerm}', keyword))
     .then(function(response) {
       return response.json();
     })
     .then(function(responsejson) {
-      let searchResults = renderSearchResults(responsejson);
-      return searchResults;
+      renderSearchResults(responsejson);
     })
     .catch(function(error) {
       renderError(error);
     })
-    .then(function(response) {
-      return response;
+    .then(function() {
+      toggleSpinner();
     })
-    // toggleSpinner();
+  return promise;
 }
 
 //Add an event listener to the "search" button so that when it is clicked (and 
@@ -128,7 +124,8 @@ searchbtn.addEventListener('click', function(event) {
 //placing that alert inside the `#records` element.
 function renderError(errorObject) {
   let alertElem = document.createElement('p');
-  alertElem.classList.add('alert alert-danger');
+  alertElem.classList.add('alert');
+  alertElem.classList.add('alert-danger');
   alertElem.textContent = errorObject.message;
   recordsDiv.appendChild(alertElem);
 }
@@ -155,7 +152,7 @@ function renderError(errorObject) {
 //after the ENTIRE request is completed (including after any error catching---
 //download the data and `catch()` the error, and `then()` show the spinner.
 function toggleSpinner() {
-  document.querySelector('i').hasclass('fa-spinner').toggleClass("d-none");
+  document.querySelector('h1 i').classList.toggle("d-none");
 }
 
 
