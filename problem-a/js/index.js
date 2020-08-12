@@ -33,8 +33,15 @@ const EXAMPLE_SEARCH_RESULTS = {results:[{
 //
 //You can test this function by passing it one of the above array items
 //(e.g., `EXAMPLE_SEARCH_RESULTS.results[0]).
+let recordsDiv = document.querySelector('#records');
 
-
+function renderTrack(song) {
+  let imgElem = document.createElement('img');
+  imgElem.setAttribute('src', song.artworkUrl100);
+  imgElem.setAttribute('alt', song.trackName);
+  imgElem.setAttribute('title', song.trackName);
+  recordsDiv.appendChild(imgElem);
+}
 
 //Define a function `renderSearchResults()` that takes in an object with a
 //`results` property containing an array of music tracks; the same format as
@@ -45,7 +52,22 @@ const EXAMPLE_SEARCH_RESULTS = {results:[{
 //
 //You can test this function by passing it the `EXAMPLE_SEARCH_RESULTS` object.
 
+//(2) Modify the above `renderSearchResults()` function so that if the `results`
+//    array is empty, you instead call the `renderError()` function and pass
+//    it an new Error object: `new Error("No results found")`
 
+function renderSearchResults(object) {
+  recordsDiv.innerHTML = '';
+  if (object.results.length == 0) {
+    renderError(new Error("No results found"));
+  }
+  for (let i=0; i<object.results.length; i++) {
+    renderTrack(object.results[i]);
+  }
+}
+
+renderSearchResults(EXAMPLE_SEARCH_RESULTS);
+console.log(recordsDiv);
 
 //Now it's the time to practice using `fetch()`! First, modify the `index.html`
 //file to load the polyfills for _BOTH_ the fetch() function and Promises, so
@@ -69,26 +91,51 @@ const EXAMPLE_SEARCH_RESULTS = {results:[{
 //your favorite band (you CANNOT test it with the search button yet!)
 const URL_TEMPLATE = "https://itunes.apple.com/search?entity=song&limit=25&term={searchTerm}";
 
-
-
+function fetchTrackList(keyword) {
+  // toggleSpinner();
+  fetch(URL_TEMPLATE.replace('{searchTerm}', keyword))
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(responsejson) {
+      let searchResults = renderSearchResults(responsejson);
+      return searchResults;
+    })
+    .catch(function(error) {
+      renderError(error);
+    })
+    .then(function(response) {
+      return response;
+    })
+    // toggleSpinner();
+}
 
 //Add an event listener to the "search" button so that when it is clicked (and 
 //the the form is submitted) your `fetchTrackList()` function is called with the
 //user-entered `#searchQuery` value. Use the `preventDefault()` function to keep
 //the form from being submitted as usual (and navigating to a different page).
-
+let searchbtn = document.querySelector('button');
+searchbtn.addEventListener('click', function(event) {
+  event.preventDefault();
+  let keyword = document.querySelector('#searchQuery').value;
+  fetchTrackList(keyword);
+})
 
 
 //Next, add some error handling to the page. Define a function `renderError()`
 //that takes in an "Error object" and displays that object's `message` property
 //on the page. Display this by creating a `<p class="alert alert-danger">` and
 //placing that alert inside the `#records` element.
-
-
+function renderError(errorObject) {
+  let alertElem = document.createElement('p');
+  alertElem.classList.add('alert alert-danger');
+  alertElem.textContent = errorObject.message;
+  recordsDiv.appendChild(alertElem);
+}
 
 //Add the error handing to your program in two ways:
 //(1) Add a `.catch()` callback to the AJAX call in `fetchTrackList()` that
-//    will render the error if one occurs in downloading or parsing.
+//    will render the error if one occurs in downloading or parsing. DONE
 //(2) Modify the above `renderSearchResults()` function so that if the `results`
 //    array is empty, you instead call the `renderError()` function and pass
 //    it an new Error object: `new Error("No results found")`
@@ -107,7 +154,9 @@ const URL_TEMPLATE = "https://itunes.apple.com/search?entity=song&limit=25&term=
 //spinner (show it) BEFORE you send the AJAX request, and toggle it back off
 //after the ENTIRE request is completed (including after any error catching---
 //download the data and `catch()` the error, and `then()` show the spinner.
-
+function toggleSpinner() {
+  document.querySelector('i').hasclass('fa-spinner').toggleClass("d-none");
+}
 
 
 
